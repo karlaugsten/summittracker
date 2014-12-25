@@ -7,7 +7,7 @@ from auth import authorized
 
 auth = HTTPBasicAuth()
 
-client = MongoClient('mongodb://summittrackerdb.cloudapp.net:27017/')
+client = MongoClient('mongodb://localhost:27017/')
 db = client['summittracker']
 
 app = Flask(__name__)
@@ -29,11 +29,13 @@ def unauthorized():
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
+# Mountains api
+
 @app.route('/api/v1.0/mountains', methods=['GET'])
 @authorized
 @auth.login_required
 def get_mountains():
-    mountains = db['mountains'].find()
+    mountains = db['mountains'].find().sort("name")
     mountains = {'mountains':mountains}
     return json_util.dumps(mountains)
 
@@ -46,9 +48,19 @@ def get_mountain(mountain_id):
         abort(404)
     return json_util.dumps(mountain)
 
+@app.route('/api/v1.0/mountains/<string:mountain_id>/activities', methods=['GET'])
+@auth.login_required
+@authorized
+def get_activity_from_mountain(mountain_id):
+    query = {}
+    query['mountain_id'] = mountain_id
+    activities = db['activities'].find(query)
+    activities = {'activities':activities}
+    return json_util.dumps(activities)
+
 # Activities API
 
-@app.route('/api/v1.0/activity', methods=['POST'])
+@app.route('/api/v1.0/activities', methods=['POST'])
 @auth.login_required
 @authorized
 def create_activity():
@@ -57,10 +69,10 @@ def create_activity():
     db['activities'].insert(request.json)
     return make_response(jsonify({'OK': 'Activity created'}), 201)
 
-@app.route('/api/v1.0/activity', methods=['GET'])
+@app.route('/api/v1.0/activities', methods=['GET'])
 @auth.login_required
 @authorized
-def get_activity_from_user():
+def get_activity():
     query = {}
     if 'user_id' in request.args:
         query['user_id'] = request.args.get('user_id')
@@ -77,8 +89,19 @@ def get_activity_from_user():
 def create_user():
     if not request.json or not 'username' in request.json or not 'password' in request.json:
         abort(400)
+    request.json['_id'] = request.json['username']
     user_id = db['users'].insert(request.json)
-    return "you suck", 201
+    return make_response(jsonify({'OK': 'user created'}), 201)
+
+@app.route('/api/v1.0/users/<user_id>/activities', methods=['GET'])
+@auth.login_required
+@authorized
+def get_activity_from_user(user_id):
+    query = {}
+    query['user_id'] = user_id
+    activities = db['activities'].find(query)
+    activities = {'activities':activities}
+    return json_util.dumps(activities)
 
 @app.route('/api/v1.0/users/login', methods=['GET'])
 @auth.login_required
@@ -89,7 +112,7 @@ def check_user():
     """
     user = db['users'].find_one({'username': auth.username()})
     return json_util.dumps(user)
-    
+
 
 if __name__ == '__main__':
     app.run(debug=True)

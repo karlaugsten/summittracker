@@ -36,7 +36,7 @@ for mountain in mountains:
 
 # Add mountains to mongodb 
 
-url = 'summittrackerdb.cloudapp.net'
+url = 'localhost'
 client = MongoClient('mongodb://' + url + ':27017/')
 db = client['summittracker']
 mountaindb = db['mountains']
