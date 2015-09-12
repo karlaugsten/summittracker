@@ -5,11 +5,18 @@ from bson.objectid import ObjectId
 from flask.ext.httpauth import HTTPBasicAuth
 from auth import authorized
 from SummitServer import app
+from secrets import mongo_db_connection_string
 
 auth = HTTPBasicAuth()
-
-client = MongoClient('mongodb://localhost:27017/')
-db = client['summittracker']
+print "connecting to MongoDB: " + mongo_db_connection_string
+client = MongoClient( mongo_db_connection_string )
+db = client['MongoLab-c']
+if not db['activities']:
+    db.create_collection('activities')
+if not db['users']:
+    db.create_collection('users')
+if not db['mountains']:
+    db.create_collection('mountains')
 
 @auth.get_password
 def get_password(username):

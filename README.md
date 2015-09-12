@@ -6,6 +6,8 @@ pip install virtualenv
 python -m virtualenv env
 2. Install dependencies
 env/bin/pip install -r requirements.txt
+3. Add secrets
+create a secrets.py file with a variable mongo_db_connection_string
+Please ask me for the connection string, or create your own mongodb
 3. Run the server locally
 env/bin/python runserver.py
-
