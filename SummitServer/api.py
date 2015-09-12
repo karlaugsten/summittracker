@@ -5,8 +5,16 @@ from bson.objectid import ObjectId
 from flask.ext.httpauth import HTTPBasicAuth
 from auth import authorized
 from SummitServer import app
-from secrets import mongo_db_connection_string
+from os import environ
 
+# Get connection string from Azure environment, otherwise itmust be in secrets file
+try:
+    mongo_db_connection_string = environ.get('MONGO_DB_CONNECTION_STRING')
+except ValueError:
+    from secrets import mongo_db_connection_string
+if mongo_db_connection_string is None:
+    from secrets import mongo_db_connection_string
+    
 auth = HTTPBasicAuth()
 print "connecting to MongoDB: " + mongo_db_connection_string
 client = MongoClient( mongo_db_connection_string )
