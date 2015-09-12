@@ -4,13 +4,12 @@ from bson import json_util
 from bson.objectid import ObjectId
 from flask.ext.httpauth import HTTPBasicAuth
 from auth import authorized
+from SummitServer import app
 
 auth = HTTPBasicAuth()
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['summittracker']
-
-app = Flask(__name__)
 
 @auth.get_password
 def get_password(username):
@@ -112,7 +111,3 @@ def check_user():
     """
     user = db['users'].find_one({'username': auth.username()})
     return json_util.dumps(user)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
